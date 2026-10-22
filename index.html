@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quadreria Studio — Coming Soon</title>
+  <meta name="description" content="Quadreria Studio — fashion collection development for founders, from idea to production-ready collection. Launching soon.">
+  <meta name="theme-color" content="#290303">
+
+  <!-- Social share preview -->
+  <meta property="og:title" content="Quadreria Studio — Coming Soon">
+  <meta property="og:description" content="Something is being curated. More details soon.">
+  <meta property="og:url" content="https://quadreria.studio/">
+  <meta property="og:type" content="website">
+
+  <link rel="icon" href="assets/favicon.png" type="image/png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #290303;
+      --text: #f5ece9;
+      --muted: rgba(245, 236, 233, 0.6);
+      --line: rgba(245, 236, 233, 0.18);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      animation: fadeIn 1.4s ease forwards;
+      opacity: 0;
+    }
+
+    .hero-gif {
+      width: min(360px, 75vw);
+      height: auto;
+      display: block;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+      font-size: clamp(36px, 7vw, 64px);
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+    }
+
+    h1 em { font-style: italic; }
+
+    .divider {
+      width: 48px;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .tagline {
+      max-width: 420px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .links {
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .links a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--line);
+      transition: border-color 0.3s ease;
+    }
+
+    .links a:hover { border-color: var(--text); }
+
+    footer {
+      position: absolute;
+      bottom: 24px;
+      color: var(--muted);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-height: 640px) {
+      footer { position: static; margin-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <main>
+    <!-- Put your GIF in an "assets" folder and keep this file name, or change the path -->
+    <img src="assets/coming-soon.gif" alt="" class="hero-gif">
+
+    <!-- LOGO: add your logo here later, e.g.
+    <img src="assets/logo.png" alt="Logo" class="logo">
+    -->
+
+    <div class="divider"></div>
+
+    <p class="tagline">
+      Something is being curated. More details soon.
+    </p>
+  </main>
+
+  <footer class="links">
+    <a href="mailto:hello@quadreria.studio">hello@quadreria.studio</a>
+  </footer>
+
+</body>
+</html>

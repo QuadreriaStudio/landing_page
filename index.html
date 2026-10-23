@@ -3,28 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quadreria Studio — Coming Soon</title>
-  <meta name="description" content="Quadreria Studio — fashion collection development for founders, from idea to production-ready collection. Launching soon.">
-  <meta name="theme-color" content="#290303">
+  <title>Quadreria Studio</title>
+  <meta name="description" content="Quadreria Studio — launching soon.">
+  <meta name="theme-color" content="#240000">
 
   <!-- Social share preview -->
-  <meta property="og:title" content="Quadreria Studio — Coming Soon">
-  <meta property="og:description" content="Something is being curated. More details soon.">
+  <meta property="og:title" content="Quadreria Studio">
+  <meta property="og:description" content="Something is being curated. More details soon!">
   <meta property="og:url" content="https://quadreria.studio/">
   <meta property="og:type" content="website">
 
-  <link rel="icon" href="assets/favicon.png" type="image/png">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <!-- Preload the font so the text doesn't flash -->
+  <link rel="preload" href="assets/fonts/glacial-indifference-400.woff2" as="font" type="font/woff2" crossorigin>
 
   <style>
+    /* Glacial Indifference — self-hosted (not available on Google Fonts) */
+    @font-face {
+      font-family: 'Glacial Indifference';
+      src: url('assets/fonts/glacial-indifference-400.woff2') format('woff2'),
+           url('assets/fonts/glacial-indifference-400.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
-      --bg: #290303;
-      --text: #f5ece9;
-      --muted: rgba(245, 236, 233, 0.6);
-      --line: rgba(245, 236, 233, 0.18);
+      --bg: #240000;
+      --text: #f4f1ec;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,8 +39,15 @@
     body {
       background-color: var(--bg);
       color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-weight: 300;
+      font-family: 'Glacial Indifference', sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: relative;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main {
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
@@ -43,110 +55,72 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 32px 20px;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 28px;
-      animation: fadeIn 1.4s ease forwards;
+      padding: 40px 16px 8vh;
+      animation: fadeIn 1.2s ease forwards;
       opacity: 0;
     }
 
-    .hero-gif {
-      width: min(360px, 75vw);
+    .logo {
+      width: 50vw;
+      max-width: 1100px;
       height: auto;
       display: block;
     }
 
-    .eyebrow {
-      font-size: 11px;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 400;
-      font-size: clamp(36px, 7vw, 64px);
-      letter-spacing: 0.02em;
-      line-height: 1.1;
-    }
-
-    h1 em { font-style: italic; }
-
-    .divider {
-      width: 48px;
-      height: 1px;
-      background: var(--line);
+    .launching {
+      width: 30vw;
+      max-width: 660px;
+      height: auto;
+      display: block;
+      margin-top: 3.5vw;
     }
 
     .tagline {
-      max-width: 420px;
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--muted);
+      margin-top: 3.5vw;
+      font-size: clamp(15px, 1.5vw, 30px);
+      letter-spacing: 0.01em;
     }
 
-    .links {
-      display: flex;
-      gap: 28px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .links a {
+    .email {
+      position: absolute;
+      right: 5.6vw;
+      bottom: 6.5vw;
+      font-size: clamp(15px, 1.5vw, 30px);
       color: var(--text);
       text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 0.12em;
-      padding-bottom: 4px;
-      border-bottom: 1px solid var(--line);
-      transition: border-color 0.3s ease;
     }
 
-    .links a:hover { border-color: var(--text); }
-
-    footer {
-      position: absolute;
-      bottom: 24px;
-      color: var(--muted);
-    }
+    .email:hover { text-decoration: underline; text-underline-offset: 4px; }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
-    @media (max-height: 640px) {
-      footer { position: static; margin-top: 40px; }
+    /* Tablets & phones */
+    @media (max-width: 768px) {
+      main { padding-bottom: 120px; }
+      .logo { width: 82vw; }
+      .launching { width: 62vw; margin-top: 7vw; }
+      .tagline { margin-top: 7vw; padding: 0 8px; }
+      .email {
+        right: 0;
+        left: 0;
+        bottom: 40px;
+        text-align: center;
+      }
     }
   </style>
 </head>
 <body>
 
   <main>
-    <!-- Put your GIF in an "assets" folder and keep this file name, or change the path -->
-    <img src="assets/coming-soon.GIF" alt="" class="hero-gif">
-
-    <!-- LOGO: add your logo here later, e.g.
-    <img src="assets/logo.png" alt="Logo" class="logo">
-    -->
-
-    <div class="divider"></div>
-
-    <p class="tagline">
-      Something is being curated. More details soon.
-    </p>
+    <img src="assets/logo.png" alt="Quadreria Studio" class="logo">
+    <img src="assets/launching-soon.gif" alt="Launching soon!" class="launching">
+    <p class="tagline">Something is being curated. More details soon!</p>
   </main>
 
-  <footer class="links">
-    <a href="mailto:hello@quadreria.studio">hello@quadreria.studio</a>
-  </footer>
+  <a class="email" href="mailto:hello@quadreria.studio">hello@quadreria.studio</a>
 
 </body>
 </html>

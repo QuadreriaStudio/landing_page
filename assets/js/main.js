@@ -26,6 +26,9 @@ window.QS_CONFIG = Object.assign({
   const touch = matchMedia("(hover: none), (pointer: coarse)").matches;
   const root = document.documentElement;
   const body = document.body;
+  /* ---------- Always start at the top of the page ---------- */
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  if (!location.hash) window.scrollTo(0, 0);
 
   /* ---------- Frame loop ---------- */
   const frameFns = [];
@@ -557,36 +560,149 @@ void main(){
       });
     });
   })();
+  /* =========================================================
+     Liquid image morph — one image melts into the next
+     (WebGL; falls back to a soft blur cross-fade if WebGL
+      or image access isn't available, e.g. opened from disk)
+     ========================================================= */
+  function createMorph(host, urls) {
+    const N = urls.length;
+    let pos = 0, impl = null;
+    const api = { set(p) { pos = clamp(p, 0, N - 1); impl && impl.set(pos); } };
 
+    function cssMorph() {
+      host.innerHTML = "";
+      host.classList.add("morph--css");
+      const els = urls.map((u, i) => { const im = new Image(); im.src = u; im.alt = ""; im.style.opacity = i ? 0 : 1; host.appendChild(im); return im; });
+      return {
+        set(p) {
+          const i = Math.floor(p), f = p - i, w = Math.sin(f * Math.PI);
+          els.forEach((e, k) => {
+            const o = k === i ? 1 - f : (k === i + 1 ? f : 0);
+            e.style.opacity = o;
+            e.style.filter = o > 0 && w > 0.02 ? `blur(${(w * 22).toFixed(1)}px)` : "none";
+            e.style.transform = `scale(${(1 + w * 0.06).toFixed(4)})`;
+          });
+        }
+      };
+    }
+
+    function glMorph() {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl", { antialias: false, premultipliedAlpha: false, powerPreference: "low-power" });
+      if (!gl) return null;
+      const vs = "attribute vec2 p; void main(){ gl_Position = vec4(p,0.,1.); }";
+      const fs = `
+precision mediump float;
+uniform sampler2D ta, tb; uniform vec2 res, sa, sb; uniform float p, time;
+float h(vec2 q){ vec3 p3 = fract(vec3(q.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float nz(vec2 q){ vec2 i=floor(q), f=fract(q); vec2 u=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1,0)),u.x), mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x), u.y); }
+float fbm(vec2 q){ float v=0., a=.5; for(int i=0;i<4;i++){ v+=a*nz(q); q*=2.03; a*=.5; } return v; }
+vec2 cover(vec2 uv, vec2 s){ float r=res.x/res.y, ir=s.x/s.y; vec2 k = r>ir ? vec2(1., ir/r) : vec2(r/ir, 1.); return (uv-.5)*k+.5; }
+void main(){
+  vec2 uv = gl_FragCoord.xy / res;
+  float w = sin(p * 3.14159);
+  vec2 q = uv * vec2(res.x/res.y, 1.) * 2.2;
+  vec2 n = vec2(fbm(q + time*.25), fbm(q + vec2(4.7,1.9) - time*.2)) - .5;
+  float edge = fbm(q*.7 + vec2(9.1,3.3) + time*.05);
+  float m = smoothstep(edge - .18, edge + .18, p*1.36 - .18);
+  vec4 ca = texture2D(ta, cover(uv + n*w*.32*(.4+m), sa));
+  vec4 cb = texture2D(tb, cover(uv - n*w*.32*(1.4-m), sb));
+  gl_FragColor = vec4(mix(ca.rgb, cb.rgb, m), 1.);
+}`;
+      const sh = (t, src) => { const o = gl.createShader(t); gl.shaderSource(o, src); gl.compileShader(o); return o; };
+      const prog = gl.createProgram();
+      gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+      gl.useProgram(prog);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const U = n => gl.getUniformLocation(prog, n);
+      const u = { ta: U("ta"), tb: U("tb"), res: U("res"), sa: U("sa"), sb: U("sb"), p: U("p"), time: U("time") };
+      gl.uniform1i(u.ta, 0); gl.uniform1i(u.tb, 1);
+      host.appendChild(canvas);
+
+      const tex = new Array(N).fill(null);
+      let failed = false, dirty = true, visible = true, cur = 0;
+      urls.forEach((url, i) => {
+        const im = new Image();
+        im.onload = () => {
+          if (failed) return;
+          const t = gl.createTexture();
+          gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, t);
+          gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+          try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im); }
+          catch (e) { failed = true; swapToCss(); return; }
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          tex[i] = { t, w: im.naturalWidth, h: im.naturalHeight };
+          dirty = true;
+        };
+        im.onerror = () => {};
+        im.src = url;
+      });
+      const resize = () => {
+        const d = Math.min(window.devicePixelRatio || 1, 1.5);
+        canvas.width = Math.max(1, host.clientWidth * d); canvas.height = Math.max(1, host.clientHeight * d);
+        gl.viewport(0, 0, canvas.width, canvas.height); dirty = true;
+      };
+      resize();
+      if (window.ResizeObserver) new ResizeObserver(resize).observe(host); else addEventListener("resize", resize);
+      new IntersectionObserver(es => { visible = es[0].isIntersecting; dirty = true; }).observe(host);
+      const t0 = performance.now();
+      onFrame(now => {
+        if (failed || !visible) return;
+        const i = Math.min(N - 1, Math.floor(cur)), f = cur - i;
+        const moving = f > 0.001 && f < 0.999;
+        if (!dirty && !moving) return;
+        const A = tex[i] || tex[Math.min(N - 1, i + 1)], B = tex[Math.min(N - 1, i + 1)] || A;
+        if (!A) return;
+        dirty = false;
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, A.t);
+        gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, B.t);
+        gl.uniform2f(u.res, canvas.width, canvas.height);
+        gl.uniform2f(u.sa, A.w, A.h); gl.uniform2f(u.sb, B.w, B.h);
+        gl.uniform1f(u.p, tex[i] ? f : 1); gl.uniform1f(u.time, reduce ? 0 : (now - t0) / 1000);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      });
+      function swapToCss() { canvas.remove(); impl = cssMorph(); impl.set(pos); }
+      return { set(p) { if (p !== cur) { cur = p; dirty = true; } } };
+    }
+
+    impl = glMorph() || cssMorph();
+    impl.set(0);
+    return api;
+  }
+
+  /* ---------- Home › Highlights: pinned image that morphs ---------- */
   (function highlights() {
     const wrap = $(".hl");
     if (!wrap) return;
-    wrap.innerHTML = PROJECTS.map((p, i) => `
-      <article class="hl__panel" data-i="${i}" data-cursor="View highlights">
-        <div class="hl__media"><img src="${p.folder}highlight.jpg" alt="${p.title}" loading="lazy"></div>
-        <div class="hl__veil"></div>
-        <div class="hl__meta label"><span>Concept collection</span><span>${p.category}</span><span>${p.year}</span></div>
+    const blocks = $(".hl__blocks", wrap), host = $(".hl__morph", wrap), sticky = $(".hl__sticky", wrap);
+    blocks.innerHTML = PROJECTS.map((p, i) => `
+      <article class="hl__block" data-i="${i}" data-cursor="View highlights">
         <h3 class="hl__title">${p.title}</h3>
         <span class="hl__cta label dot">View highlights</span>
-        <div class="hl__dim" style="position:absolute;inset:0;background:#0d0000;opacity:0;pointer-events:none"></div>
       </article>`).join("");
-    const panels = $$(".hl__panel", wrap).map(el => ({ el, media: $(".hl__media", el), title: $(".hl__title", el), dim: $(".hl__dim", el) }));
-    panels.forEach((p, i) => p.el.addEventListener("click", () => viewer && viewer.open(i, p.media)));
-    onFrame((t, y) => {
-      const top = wrap.getBoundingClientRect().top + y;
-      panels.forEach((p, i) => {
-        const start = top + i * vh - vh;           // panel starts entering
-        const q = clamp((y - start) / (vh * 2));    // 0 → entering, .5 → full, 1 → covered
-        if (q <= 0 || q >= 1) return;
-        p.title.style.transform = `translate3d(0,calc(-50% + ${(0.5 - q) * 70}vh),0)`;
-        p.media.style.transform = `scale(${1.12 - 0.12 * clamp(q * 2)})`;
-        p.dim.style.opacity = i < panels.length - 1 ? clamp((q - 0.5) * 2) * 0.7 : 0;
-      });
+    const morph = createMorph(host, PROJECTS.map(p => p.folder + "highlight.jpg"));
+    $$(".hl__block", blocks).forEach((b, i) => b.addEventListener("click", () => viewer && viewer.open(i, sticky)));
+    const ease = t => t * t * (3 - 2 * t);
+    onFrame(() => {
+      const r = wrap.getBoundingClientRect();
+      if (r.bottom < -50 || r.top > vh + 50) return;
+      const s = Math.max(0, -r.top / vh);           // 0 = first title centred
+      const i = Math.floor(s), f = s - i;
+      morph.set(i + ease(clamp((f - 0.08) / 0.84)));  // slow morph spread across the scroll
     });
   })();
 
   /* =========================================================
-     WORK
+     WORK — rows scroll, the square image stays put and morphs
      ========================================================= */
   (function works() {
     const list = $(".works__list");
@@ -597,21 +713,33 @@ void main(){
           <div><h2>${p.title}</h2><span class="label label--dim">${p.tags}</span></div>
           <span class="label label--dim">${p.year}</span>
         </div>
-        <div class="work__img"><img src="${p.folder}cover.jpg" alt="${p.title}" loading="lazy"></div>
+        <div class="work__slot"><img src="${p.folder}cover.jpg" alt="${p.title}" loading="lazy"></div>
         <div class="work__right">
           <span class="label">Concept collection<br><span class="label--dim">(${String(i + 1).padStart(2, "0")})</span></span>
           <span class="label label--dim">${p.category}</span>
         </div>
       </article>`).join("");
     const rows = $$(".work", list);
-    rows.forEach((r, i) => r.addEventListener("click", () => viewer && viewer.open(i, $(".work__img", r))));
-    let active = -1;
-    onFrame(() => {
+    const sticky = $(".works__sticky"), host = $(".works__morph");
+    const desktop = () => getComputedStyle($(".works__media")).display !== "none";
+    const morph = host ? createMorph(host, PROJECTS.map(p => p.folder + "cover.jpg")) : null;
+    let active = 0, cur = 0, last = performance.now();
+    rows.forEach((r, i) => r.addEventListener("click", () => viewer && viewer.open(i, desktop() ? sticky : $(".work__slot", r))));
+    if (sticky) sticky.addEventListener("click", () => viewer && viewer.open(active, sticky));
+    rows[0].classList.add("active");
+    onFrame(now => {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now;
       let best = 0, bd = Infinity;
       rows.forEach((r, i) => { const b = r.getBoundingClientRect(); const d = Math.abs(b.top + b.height / 2 - vh / 2); if (d < bd) { bd = d; best = i; } });
       if (best !== active) { active = best; rows.forEach((r, i) => r.classList.toggle("active", i === best)); }
+      if (morph && cur !== active) {               // glide slowly to the active project
+        const step = dt * 0.55 * Math.max(1, Math.abs(active - cur));   // ~1.8s per change
+        cur = Math.abs(active - cur) <= step ? active : cur + Math.sign(active - cur) * step;
+        morph.set(cur);
+      }
     });
   })();
+
 
   /* =========================================================
      SERVICES — FAQ accordion
@@ -671,17 +799,31 @@ void main(){
   (function story() {
     const sec = $(".story");
     if (!sec) return;
-    const path = $(".story__icon path", sec), items = $$(".story__item", sec), count = $(".story__count", sec);
-    const L = path.getTotalLength();
-    path.style.strokeDasharray = L; path.style.strokeDashoffset = L;
-    let active = -1, draw = 0;
-    onFrame(() => {
+    const items = $$(".story__item", sec), count = $(".story__count", sec);
+    // split the Q outline into its separate lines so they all draw together
+    const parts = [];
+    const src = $(".about-q path");
+    if (src) {
+      src.getAttribute("d").split(/(?=M)/).filter(d => d.trim()).forEach(d => {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        el.setAttribute("d", d); src.parentNode.appendChild(el);
+        const L = el.getTotalLength();
+        el.style.strokeDasharray = L; el.style.strokeDashoffset = L;
+        parts.push({ el, L });
+      });
+      src.remove();
+    }
+    let draw = 0, active = -1;
+    onFrame((t, y) => {
+      // Q: empty at the top of the page, fully drawn at the very bottom
+      if (parts.length) {
+        const total = Math.max(1, document.documentElement.scrollHeight - vh);
+        draw = lerp(draw, clamp(y / total), 0.2);
+        parts.forEach(q => { q.el.style.strokeDashoffset = q.L * (1 - draw); });
+      }
       const r = sec.getBoundingClientRect();
       if (r.bottom < -50 || r.top > vh + 50) return;
       const p = clamp(-r.top / (sec.offsetHeight - vh));
-      draw = lerp(draw, clamp(p / 0.86), 0.1);
-      path.style.strokeDashoffset = L * (1 - draw);
-      path.style.fillOpacity = clamp((p - 0.86) / 0.1);
       const a = Math.min(items.length - 1, Math.floor(p * items.length * 0.999));
       if (a !== active) {
         active = a;

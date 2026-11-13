@@ -38,7 +38,7 @@ window.QS_PROJECTS = [
   {
     id: "project-03",
     title: "Concept 03",
-    category: "Western Wear",
+    category: "Contemporary Wear",
     year: "2026",
     tags: "Concept · Moodboard · 3D Mockups",
     description: "Placeholder — add the story of this concept collection here: the founder idea it answers, the mood, and how colour, form and detail came together.",
@@ -49,7 +49,7 @@ window.QS_PROJECTS = [
   {
     id: "project-04",
     title: "Concept 04",
-    category: "Loungewear",
+    category: "Streetwear",
     year: "2026",
     tags: "Concept · Moodboard · 3D Mockups",
     description: "Placeholder — add the story of this concept collection here: the founder idea it answers, the mood, and how colour, form and detail came together.",

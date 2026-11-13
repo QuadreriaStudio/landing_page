@@ -308,11 +308,11 @@ void main(){
             <dt>Scope</dt><dd>${p.deliverables}</dd>
           </dl>
         </div>
-        <figure class="viewer__fig viewer__fig--cover" style="aspect-ratio:1"><img src="${src(p, "cover.jpg")}" alt="${p.title} — cover" style="width:100%;object-fit:cover"></figure>
+        <figure class="viewer__fig viewer__fig--cover" style="aspect-ratio:1"><img src="${src(p, "cover.png")}" alt="${p.title} — cover" style="width:100%;object-fit:cover"></figure>
         ${p.gallery.map((g, k) => `<figure class="viewer__fig stagger"><img src="${src(p, g)}" alt="${p.title} — image ${k + 1}" loading="eager"></figure>`).join("")}
         <div class="viewer__next stagger" data-cursor="Next project">
           <span class="label label--dim">Next project</span>
-          <div class="thumb"><img src="${src(n, "cover.jpg")}" alt=""></div>
+          <div class="thumb"><img src="${src(n, "cover.png")}" alt=""></div>
           <h3>${n.title}</h3>
           <span class="label">${n.category}</span>
         </div>`;
@@ -452,7 +452,7 @@ void main(){
     const N = PROJECTS.length;
     ring.innerHTML = PROJECTS.map((p, i) => `
       <div class="card" data-i="${i}">
-        <div class="card__img"><img src="${p.folder}cover.jpg" alt="${p.title}" draggable="false"></div>
+        <div class="card__img"><img src="${p.folder}cover.png" alt="${p.title}" draggable="false"></div>
         <div class="card__shade"></div>
       </div>`).join("");
     const cards = $$(".card", ring).map(el => ({ el, img: $("img", el), shade: $(".card__shade", el) }));
@@ -689,7 +689,7 @@ void main(){
         <h3 class="hl__title">${p.title}</h3>
         <span class="hl__cta label dot">View highlights</span>
       </article>`).join("");
-    const morph = createMorph(host, PROJECTS.map(p => p.folder + "highlight.jpg"));
+    const morph = createMorph(host, PROJECTS.map(p => p.folder + "highlight.png"));
     $$(".hl__block", blocks).forEach((b, i) => b.addEventListener("click", () => viewer && viewer.open(i, sticky)));
     const ease = t => t * t * (3 - 2 * t);
     onFrame(() => {
@@ -713,7 +713,7 @@ void main(){
           <div><h2>${p.title}</h2><span class="label label--dim">${p.tags}</span></div>
           <span class="label label--dim">${p.year}</span>
         </div>
-        <div class="work__slot"><img src="${p.folder}cover.jpg" alt="${p.title}" loading="lazy"></div>
+        <div class="work__slot"><img src="${p.folder}cover.png" alt="${p.title}" loading="lazy"></div>
         <div class="work__right">
           <span class="label">Concept collection<br><span class="label--dim">(${String(i + 1).padStart(2, "0")})</span></span>
           <span class="label label--dim">${p.category}</span>
@@ -722,7 +722,7 @@ void main(){
     const rows = $$(".work", list);
     const sticky = $(".works__sticky"), host = $(".works__morph");
     const desktop = () => getComputedStyle($(".works__media")).display !== "none";
-    const morph = host ? createMorph(host, PROJECTS.map(p => p.folder + "cover.jpg")) : null;
+    const morph = host ? createMorph(host, PROJECTS.map(p => p.folder + "cover.png")) : null;
     let active = 0, cur = 0, last = performance.now();
     rows.forEach((r, i) => r.addEventListener("click", () => viewer && viewer.open(i, desktop() ? sticky : $(".work__slot", r))));
     if (sticky) sticky.addEventListener("click", () => viewer && viewer.open(active, sticky));

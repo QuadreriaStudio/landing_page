@@ -6,9 +6,9 @@
 
    To update a project:
    1. Put your images in  assets/images/projects/project-0X/
-      - cover.png      → square (1:1), used in the carousel + Work list
-      - highlight.png  → wide (16:9), used in Home › Highlights
-      - gallery-01.png … → any ratio, shown in the opened project
+       - cover.jpg      → square (1:1), used in the carousel + Work list
+      - highlight.jpg  → wide (16:9), used in Home › Highlights
+      - gallery-01.jpg … → any ratio (or .mp4 for moving images), shown in the opened project
    2. Change the text below (title, category, year, description…).
    Keep the same file names and nothing else needs to change.
    ========================================================= */
@@ -22,7 +22,7 @@ window.QS_PROJECTS = [
     description: "Nullform is a contemporary streetwear label rooted in absence, structure and a fluid sense of form. It explores the space between presence and absence - where form is not fixed, but constantly shifting, through minimal design, functional silhouettes and graphic systems that reflect movement, distortion and states of transition.",
     // deliverables: "Moodboard, colour palette, 3D mockups",
     folder: "assets/images/projects/project-01/",
-    gallery: ["gallery-01.gif", "gallery-02.png", "gallery-03.png", "gallery-04.png", "gallery-05.png", "gallery-06.png", "gallery-07.png"]
+    gallery: ["gallery-01.mp4", "gallery-02.jpg", "gallery-03.jpg", "gallery-04.jpg", "gallery-05.jpg", "gallery-06.jpg", "gallery-07.jpg"]
   },
   {
     id: "project-02",
@@ -33,7 +33,7 @@ window.QS_PROJECTS = [
     description: "MARGIN KIDS is a premium womenswear label that celebrates the space between work and personal life, creating clothing for women who work from home but never compromise on style.The Monday–Friday collection translates the rhythm of the working week into five relaxed, contemporary looks, balancing the comfort of loungewear with the understated appeal of premium streetwear.",
     // deliverables: "Moodboard, colour palette, 3D mockups",
     folder: "assets/images/projects/project-02/",
-    gallery: ["gallery-01.gif", "gallery-02.png", "gallery-03.png", "gallery-04.png", "gallery-05.png", "gallery-06.png", "gallery-07.png"]
+    gallery: ["gallery-01.mp4", "gallery-02.jpg", "gallery-03.jpg", "gallery-04.jpg", "gallery-05.jpg", "gallery-06.jpg", "gallery-07.jpg"]
   },
   // {
   //   id: "project-03",
